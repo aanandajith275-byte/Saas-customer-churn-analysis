@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="Churn Analysis.db" readonly="0" foreign_keys="0" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="2494"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="accounts" custom_title="0" dock_id="1" table="4,8:mainaccounts"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000011300ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">SELECT
+    a.industry,
+    COUNT(*) AS total_accounts,
+    SUM(CASE WHEN a.churn_flag = 'TRUE' THEN 1 ELSE 0 END) AS churned_accounts,
+    ROUND(
+        100.0 * SUM(CASE WHEN a.churn_flag = 'TRUE' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS churn_rate
+FROM accounts a
+GROUP BY a.industry
+ORDER BY churn_rate DESC;   -- Churn rate based on industry
+
+
+
+SELECT
+    plan_tier,
+    COUNT(*) AS total_accounts,
+    SUM(CASE WHEN churn_flag = 'TRUE' THEN 1 ELSE 0 END) AS churned_accounts,
+    ROUND(
+        100.0 * SUM(CASE WHEN churn_flag = 'TRUE' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS churn_rate
+FROM accounts
+GROUP BY plan_tier
+ORDER BY churn_rate DESC;    -- Churn rate by PLAN
+
+
+
+SELECT
+    billing_frequency,
+    COUNT(*) AS total_subscriptions,
+    SUM(CASE WHEN churn_flag = 'TRUE' THEN 1 ELSE 0 END) AS churned_subscriptions,
+    ROUND(
+        100.0 * SUM(CASE WHEN churn_flag = 'TRUE' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS churn_rate
+FROM subscriptions
+GROUP BY billing_frequency
+ORDER BY churn_rate DESC;  -- Churn rate by billing frequency
+
+
+
+SELECT
+    f.feature_name,
+    COUNT(*) AS users,
+    SUM(CASE WHEN a.churn_flag = 'TRUE' THEN 1 ELSE 0 END) AS churned_users,
+    ROUND(
+        100.0 * SUM(CASE WHEN a.churn_flag = 'TRUE' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS churn_rate
+FROM feature_usage f
+JOIN subscriptions s
+    ON f.subscription_id = s.subscription_id
+JOIN accounts a
+    ON s.account_id = a.account_id
+GROUP BY f.feature_name
+ORDER BY churn_rate DESC
+LIMIT 10;             --Churn rate for each feature
+
+
+SELECT
+    CASE
+        WHEN a.churn_flag = 'TRUE' THEN 'Churned'
+        ELSE 'Non-Churned'
+    END AS customer_status,
+    ROUND(
+        100.0 * SUM(
+            CASE WHEN s.escalation_flag = 'TRUE' THEN 1 ELSE 0 END
+        ) / COUNT(s.ticket_id),
+        2
+    ) AS escalation_rate
+FROM accounts a
+JOIN support_tickets s
+    ON a.account_id = s.account_id
+GROUP BY a.churn_flag
+ORDER BY a.churn_flag;</sql><current_tab id="0"/></tab_sql></sqlb_project>
