@@ -1,5 +1,7 @@
 -- SaaS Customer Churn Analysis
 -- SQLite / DB Browser for SQLite
+-- Core idea: understand where churn is concentrated and what customer
+-- characteristics can be used for retention analysis.
 
 -- 1. Executive KPIs
 SELECT
