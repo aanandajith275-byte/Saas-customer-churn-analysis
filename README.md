@@ -1,54 +1,85 @@
 # SaaS Customer Churn Analysis
 
-A SQL and Power BI project built around a 500-account SaaS dataset. The analysis looks at where churn is concentrated, how churn relates to product and support activity, and how much recurring revenue is associated with churned customers.
+## Project Overview
 
-## Current snapshot
+This project analyzes customer churn for a SaaS business to identify customer segments associated with higher churn, understand possible drivers of churn, and translate the analysis into retention-focused business insights.
 
-- 500 customer accounts
-- 110 churned accounts
-- Overall churn rate: 22%
+The core workflow remains **SQL analysis + Power BI visualization**, but the SQL layer has been expanded to go beyond simple industry and plan-level churn counts.
 
-## Tools
+## Business Objective
+
+The analysis focuses on:
+
+- Overall customer churn
+- Churn by industry and plan tier
+- Customer-size segments
+- Acquisition / referral sources
+- Billing and auto-renewal behaviour
+- Revenue at risk from churn
+- Churn reasons
+- Feature adoption and churn
+- Support-ticket behaviour
+- Monthly churn trends
+- Industry × plan retention segments
+
+## Tools Used
 
 - SQL
 - SQLite / DB Browser for SQLite
+- Microsoft Excel
 - Power BI
-- Excel
 
-## Data
+## Dataset
 
-The project uses five main tables:
+The project uses a SaaS customer dataset containing account, subscription, product-usage, support, and churn-event information.
 
-- `accounts` — customer profile and churn status
-- `subscriptions` — plan, seats, MRR/ARR, billing and renewal fields
-- `feature_usage` — product feature activity
-- `support_tickets` — support volume and response metrics
-- `churn_events` — churn dates, reason codes, refunds and feedback
+Main tables:
 
-Raw files are under `data/raw/`. Analysis-ready files are under `data/analysis/`.
+- **accounts** — customer profile and churn status
+- **subscriptions** — plans, seats, MRR/ARR, billing and renewal information
+- **feature_usage** — product feature usage
+- **support_tickets** — support volume, response/resolution time and escalations
+- **churn_events** — churn dates, reasons, refunds and customer feedback
 
-## SQL analysis
+The analysis contains 500 customer accounts.
 
-The main SQL file is `sql/churn_analysis.sql`.
+## SQL Analysis
 
-It covers:
+The expanded SQL analysis is available in:
 
-1. Overall churn KPIs
+`sql/churn_analysis.sql`
+
+It includes:
+
+1. Executive churn KPIs
 2. Churn by industry
-3. Churn by plan
+3. Churn by plan tier
 4. Churn by referral source
 5. Churn by customer-size band
-6. Billing frequency and auto-renewal
-7. Churned MRR and ARR
-8. Churn reasons
-9. Feature usage and churn
-10. Support metrics by customer status
-11. Monthly churn
-12. Industry × plan segments
+6. Billing frequency × auto-renewal analysis
+7. Churned MRR and ARR by plan
+8. Churn reasons and their share of churn events
+9. Feature usage vs churn
+10. Support response, resolution and escalation behaviour
+11. Monthly churn trend with a cumulative window calculation
+12. Industry × plan retention segmentation
 
-The queries use joins, CTEs, conditional aggregation, `CASE`, `HAVING`, and window functions.
+This adds more analytical depth while keeping the original project idea unchanged.
 
-For example:
+## Example SQL Techniques
+
+The analysis uses practical SQL patterns that are useful for analyst interviews:
+
+- `CASE WHEN` for segmentation
+- `GROUP BY` and `HAVING`
+- Multiple-table `JOIN`s
+- Conditional aggregation
+- CTEs
+- Window functions
+- Revenue aggregation
+- Segment-level churn rates
+
+For example, the project uses a window function to calculate cumulative churn over time:
 
 ```sql
 SUM(churned_customers) OVER (
@@ -58,53 +89,100 @@ SUM(churned_customers) OVER (
 
 ## Dashboard
 
-The Power BI file is in `powerbi/`.
+The Power BI dashboard presents the SQL findings visually.
 
-### Executive overview
+### Executive Overview
 
 ![Executive Overview](dashboard/executive_overview.png)
 
-This page shows the main customer and churn KPIs.
+The overview focuses on the main customer and churn KPIs and gives a quick view of the customer base.
 
-### Churn insights
+### Churn Insights
 
 ![Churn Insights](dashboard/churn_insights.png)
 
-This page looks at churn across customer and subscription segments.
+The second page focuses on churn patterns across customer segments and supports the retention analysis.
 
-## Analysis areas
+## Key Analysis Areas
 
-### Segments
+### Customer Segmentation
 
-Churn is compared across industry, plan tier, customer size, referral source, billing frequency and auto-renewal.
+Churn is compared across:
 
-### Revenue at risk
+- Industry
+- Plan tier
+- Customer size
+- Referral source
+- Billing frequency
+- Auto-renewal status
 
-The SQL analysis calculates churned MRR and ARR by plan, so the project looks at recurring revenue as well as customer counts.
+This helps distinguish overall churn from segment-specific retention problems.
 
-### Product usage
+### Revenue at Risk
 
-Feature usage is joined back to accounts to compare churn rates across features.
+Instead of only counting churned customers, the SQL analysis also calculates churned MRR and ARR by plan tier.
 
-### Support
+This gives the analysis a revenue perspective:
 
-Support-ticket volume, response time, resolution time and escalation rate are compared between churned and active customers.
+**customer churn → recurring revenue at risk**
 
-### Churn reasons
+### Product Usage
 
-Recorded reason codes such as pricing, features, support, budget and competitor are summarized from the churn-event table.
+Feature-level usage is joined to subscription and account data to compare churn rates across product features.
 
-These relationships are treated as things to investigate. They do not prove that a particular factor caused churn.
+This can help identify areas where adoption and retention should be investigated further.
+
+### Support Experience
+
+Support tickets are connected back to customer churn status to compare:
+
+- Ticket volume
+- First-response time
+- Resolution time
+- Escalation rate
+
+These are treated as relationships to investigate, not proof that support behaviour causes churn.
+
+### Churn Reasons
+
+The churn-event table is used to summarize reasons such as:
+
+- Pricing
+- Features
+- Support
+- Budget
+- Competitor
+- Unknown
+
+This provides a direct view of the reasons recorded at churn.
+
+## Business Interpretation
+
+The project is designed to move from:
+
+**Descriptive analysis → segmentation → retention action**
+
+Examples of questions the analysis can answer:
+
+- Which customer segments have elevated churn?
+- Which plans contribute more churned recurring revenue?
+- Are some acquisition channels associated with higher churn?
+- Does auto-renewal behaviour differ between churned and retained customers?
+- Which product features show different churn rates?
+- How do support metrics differ between churned and active customers?
+- Which recorded churn reasons occur most frequently?
+
+The results can then be used to prioritize retention investigations and customer-engagement strategies.
 
 ## Limitations
 
-- The dataset is a public/constructed analytical dataset, not a live production database.
-- The analysis is descriptive and does not build a churn-prediction model.
+- The dataset is a constructed/public analytical dataset rather than a live SaaS production database.
 - Observed relationships do not establish causation.
-- Churn reasons depend on the recorded reason codes and feedback.
-- The dashboard is a portfolio analysis rather than a production BI deployment.
+- Feature usage and support metrics should be interpreted alongside customer context.
+- Churn-event reasons depend on the recorded reason codes and feedback.
+- The project is an analytical portfolio project and does not represent a production churn-prediction system.
 
-## Project structure
+## Project Structure
 
 ```text
 Saas-customer-churn-analysis/
@@ -113,8 +191,8 @@ Saas-customer-churn-analysis/
 │   ├── raw/
 │   └── analysis/
 ├── sql/
-│   ├── churn_analysis.sql
-│   └── Churn Analysis.sqbpro
+│   ├── Churn Analysis.sqbpro
+│   └── churn_analysis.sql
 ├── powerbi/
 │   └── Customer Churn Analysis.pbix
 └── dashboard/
@@ -122,14 +200,15 @@ Saas-customer-churn-analysis/
     └── churn_insights.png
 ```
 
-## Run
+## How to Use
 
-1. Open the data in SQLite / DB Browser for SQLite.
-2. Run `sql/churn_analysis.sql`.
-3. Review the grouped results.
-4. Open the Power BI file for the dashboard.
-5. Use the SQL results and dashboard together when discussing the findings.
+1. Open the database in SQLite / DB Browser for SQLite.
+2. Run the queries in `sql/churn_analysis.sql`.
+3. Review the grouped outputs for segment and retention analysis.
+4. Open the Power BI file to explore the dashboard visuals.
+5. Use the SQL results together with the dashboard to communicate the business implications.
 
 ## Author
 
-Aanand Ajith — B.Tech Mechanical Engineering, IIT Hyderabad
+Aanand Ajith  
+B.Tech Mechanical Engineering, IIT Hyderabad
